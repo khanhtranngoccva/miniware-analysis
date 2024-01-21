@@ -1,0 +1,53 @@
+version: "2.24.0"
+services:
+  postgresql:
+    build:
+      context: miniware-postgresql
+      dockerfile: Dockerfile
+    restart: "on-failure"
+    environment:
+      POSTGRES_USER: "miniware"
+      POSTGRES_PASSWORD: "developer"
+      POSTGRES_DB: "miniware"
+    tty: true
+    ports:
+      - "8888:5432"
+    networks:
+      - "main"
+  backend:
+    build:
+      context: "miniware-processor"
+      dockerfile: Dockerfile
+    restart: "on-failure"
+    tty: true
+    ports:
+      - "4000:4000"
+    develop:
+      watch:
+        - action: "sync"
+          path: "./miniware-processor"
+          target: "/application"
+        - action: rebuild
+          path: "./miniware-processor/requirements.txt"
+    networks:
+      - "main"
+  frontend:
+    build:
+      context: "miniware-frontend"
+      dockerfile: Dockerfile
+    restart: "on-failure"
+    tty: true
+    develop:
+      watch:
+        - action: sync
+          path: "./miniware-frontend"
+          target: "/application"
+        - action: rebuild
+          path: "./miniware-frontend/package.json"
+    ports:
+      - "3000:3000"
+    networks:
+      - "main"
+networks:
+  main:
+    driver: "bridge"
