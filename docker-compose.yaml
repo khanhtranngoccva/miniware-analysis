@@ -20,8 +20,6 @@ services:
       dockerfile: Dockerfile
     restart: "on-failure"
     tty: true
-    ports:
-      - "4000:4000"
     develop:
       watch:
         - action: "sync"
@@ -44,10 +42,18 @@ services:
           target: "/application"
         - action: rebuild
           path: "./miniware-frontend/package.json"
-    ports:
-      - "3000:3000"
     networks:
       - "main"
+  nginx:
+    image: nginx:latest
+    ports:
+      - "3000:3000"
+      - "4000:4000"
+    volumes:
+      - "./nginx:/etc/nginx/conf.d"
+      - "./ssl:/etc/ssl"
+    networks:
+      - main
 networks:
   main:
     driver: "bridge"
